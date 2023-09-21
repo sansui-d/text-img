@@ -7,7 +7,7 @@ function App() {
   return (
     <div className="text-img">
       <img src={img}></img>
-      <Mask img={img}/>
+      <Mask imgs={[img, img]}/>
     </div>
   );
 }

@@ -1,14 +1,16 @@
 import React from 'react';
-import Nav from './components/Nav';
 import Content from './components/Content';
 import './index.less';
 
 function Mask(props) {
-    const { img } = props;
+    const { imgs } = props;
+    const handleClose = () => {
+
+    }
     return (
         <div className="text-gif-mask">
-            <Nav />
-            <Content />
+            <div className='text-gif-mask-close' onClick={handleClose}>关闭</div>
+            <Content imgs={imgs}/>
             {/* <img src={img}></img> */}
         </div>
     );

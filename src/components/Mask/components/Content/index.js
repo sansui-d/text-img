@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import './index.less';
 import img from '../../../../../public/favicon.png';
 
@@ -37,7 +37,65 @@ const options = [
     },
 ]
 function Content(props) {
-    const {  } = props;
+    const { imgs } = props;
+    const [scaleX, setScaleX] = useState(1);
+    const [scaleY, setScaleY] = useState(1);
+    const [rotate, setRotate] = useState(0);
+    const imgStyles = useMemo(() => {
+        return {
+            transform: `scaleX(${scaleX}) scaleY(${scaleY}) rotate(${rotate}deg)`,
+        }
+    }, [scaleX, scaleY, rotate])
+    const handleClick = (type) => {
+        switch (type) {
+            case 'scale-up':
+                if(scaleX === -0.2 || scaleY === -0.2) {
+                    setScaleX(scaleX)
+                    setScaleY(scaleY)
+                    break
+                }
+                if (scaleX < 0 || scaleY < 0){
+                    setScaleX(scaleX - 0.2)
+                    setScaleY(scaleY - 0.2)
+                    break
+                }
+                setScaleX(scaleX + 0.2 === 0 ? scaleX : scaleX + 0.2)
+                setScaleY(scaleY + 0.2 === 0 ? scaleY : scaleY + 0.2)
+                break;
+            case 'scale-down':
+                if (scaleX < 0 || scaleY < 0){
+                    setScaleX(scaleX + 0.2)
+                    setScaleY(scaleY + 0.2)
+                    break
+                }
+                setScaleX(scaleX - 0.2 === 0 ? scaleX : scaleX - 0.2)
+                setScaleY(scaleY - 0.2 === 0 ? scaleY : scaleY - 0.2)
+                break;
+            case 'one-to-one':
+                setScaleX(1)
+                setScaleY(1)
+                break;
+            case 'reset':
+                setScaleX(1)
+                setScaleY(1)
+                setRotate(0)
+                break;
+            case 'rotate-left':
+                setRotate(rotate - 90)
+                break;
+            case 'rotate-right':
+                setRotate(rotate + 90)
+                break;
+            case 'flip-horizontal':
+                setScaleX(-scaleX)
+                break;
+            case 'flip-vertical':
+                setScaleY(-scaleY)
+                break;
+            default:
+                break;
+        }
+    }
     return (
         <div className="text-gif-mask-content">
             <div className='text-gif-mask-img'>
@@ -45,13 +103,13 @@ function Content(props) {
                 xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
                     <foreignObject x="0" y="0" width="100%" height="100%">
                         <div className='text-gif-mask-container'>
-                            <img x="0" y="0" width={139} height={128} src={img} />
-                        </div>      
+                            <img src={img} style={imgStyles}/>
+                        </div>
                     </foreignObject>
                 </svg>
             </div>
             <div className='text-gif-mask-tool'>
-                {options.map((item)=>(<div className='text-gif-mask-tool-item' key={item.type}>{item.name}</div>))}
+                {options.map((item)=>(<div className='text-gif-mask-tool-item' onClick={() => handleClick(item.type)} key={item.type}>{item.name}</div>))}
             </div>
         </div>
     );
