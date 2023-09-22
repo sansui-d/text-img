@@ -1,5 +1,7 @@
 .text-gif-mask-content {
     flex: 1;
+    width: calc(100vw - 40px);
+
     .text-gif-mask-tool {
         position: absolute;
         bottom: 20px;
@@ -7,20 +9,25 @@
         display: flex;
         justify-content: center;
         width: calc(100% - 40px);
+
         &-item {
             margin-left: 8px;
             color: #fff;
         }
+
         &-item:first-child {
             margin-left: 0;
         }
     }
+
     .text-gif-mask-img {
         height: calc(100% - 50px);
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+
         .text-gif-mask-svg {
             .text-gif-mask-container {
                 width: 100%;
@@ -28,6 +35,10 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+
+                .text-gif-mask-input {
+                    position: absolute;
+                }
             }
         }
     }
