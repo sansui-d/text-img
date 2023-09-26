@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { fabric } from 'fabric';
 import './index.less';
 
@@ -46,52 +46,73 @@ function Content(props) {
     const [height, setHeight] = useState(img.height);
     const [scaleX, setScaleX] = useState(1);
     const [scaleY, setScaleY] = useState(1);
-    const [rotate, setRotate] = useState(0);
-    const canvasEl = useRef(null);
-    const imgStyles = useMemo(() => {
-        return {
-            transform: `scaleX(${scaleX}) scaleY(${scaleY}) rotate(${rotate}deg)`,
-            width: width,
-            height: height,
-        }
-    }, [width, height, scaleX, scaleY, rotate])
+    const [angle, setAngle] = useState(0);
+    const canvas = useRef(null);
     const handleAddText = () => {
-
+        const itext = new fabric.Textbox('Lorum ipsum dolor sit amet', {
+            left: 0,
+            top: 0,
+            width: 150,
+            fontSize: 20,
+            transparentCorners: false,
+            borderColor: '#2d8cf0',
+            cornerColor: "#2d8cf0",
+            cornerStyle: 'circle',
+        });
+        canvas.current.add(itext).setActiveObject(itext);
     }
+    const changeImg = useCallback(() => {
+        fabric.Image.fromURL(
+            img.src,
+            (img) => {
+                canvas.current.setBackgroundImage(
+                    img,
+                    canvas.current.renderAll.bind(canvas.current),
+                    {
+                        scaleX: scaleX,
+                        scaleY: scaleY,
+                        angle: angle
+                    }
+                )
+            }
+        )
+    }, [scaleX, scaleY, angle])
     const handleClick = (type) => {
         switch (type) {
             case 'scale-up':
-                setWidth(width * 1.2)
-                setHeight(height * 1.2)
                 break
             case 'scale-down':
                 setWidth(width / 1.2)
                 setHeight(height / 1.2)
                 break
             case 'one-to-one':
-                setWidth(img.width)
-                setHeight(img.height)
-                setScaleX(1)
-                setScaleY(1)
+                fabric.Image.fromURL(
+                    img.src,
+                    (img) => {
+                        canvas.current.setBackgroundImage(
+                            img,
+                            canvas.current.renderAll.bind(canvas.current),
+                            {
+                                scaleX: canvas.current.width / img.width,
+                                scaleY: canvas.current.height / img.height
+                            }
+                        )
+                    }
+                )
                 break;
             case 'reset':
-                setWidth(img.width)
-                setHeight(img.height)
-                setScaleX(1)
-                setScaleY(1)
-                setRotate(0)
                 break;
             case 'rotate-left':
-                setRotate(rotate - 90)
+
                 break;
             case 'rotate-right':
-                setRotate(rotate + 90)
+
                 break;
             case 'flip-horizontal':
-                setScaleX(-scaleX)
+
                 break;
             case 'flip-vertical':
-                setScaleY(-scaleY)
+
                 break;
             case 'add-text':
                 handleAddText()
@@ -101,27 +122,49 @@ function Content(props) {
         }
     }
     useEffect(() => {
-        const options = {};
-        const canvas = new fabric.Canvas(canvasEl.current, options);
-        const image = new fabric.Image(img, {
-            top: 0,
-            left: 0
-        })
-        canvas.add(image)
-        return () => {
-            canvas.dispose();
-        }
+        canvas.current = canvas.current
+            || new fabric.Canvas('canvas', {
+                width: 500, height: 300,
+            })
+
+        fabric.Object.prototype.cornerStyle = "circle";
+        fabric.Object.prototype.cornerColor = "#2d8cf0";
+        fabric.Object.prototype.borderColor = '#2d8cf0';
+        fabric.Object.prototype.transparentCorners = false;
+        canvas.current.hoverCursor = 'pointer';
+        fabric.Image.fromURL(
+            img.src,
+            (i) => {
+                canvas.current.setBackgroundImage(
+                    i,
+                    canvas.current.renderAll.bind(canvas.current),
+                    {
+                        top: (300 - img.height) / 2,
+                        left: (500 - img.width) / 2,
+                    }
+                )
+            }
+        )
+        changeImg()
     }, []);
+    const handleDownload = () => {
+
+    }
+    const downloadURI = (uri, name) => {
+
+    }
     return (
         <div className="text-gif-mask-content">
             <div className='text-gif-mask-img'>
-                <canvas ref={canvasEl} width={width} height={height}></canvas>
+                <canvas id="canvas" style={{
+                    border: '1px solid #ccc'
+                }}></canvas>
             </div>
             <div className='text-gif-mask-tool'>
                 {options.map((item) => (<div className='text-gif-mask-tool-item' onClick={() => handleClick(item.type)} key={item.type}>{item.name}</div>))}
+                <div className='download' onClick={handleDownload}>下载</div>
             </div>
         </div>
-
     );
 }
 

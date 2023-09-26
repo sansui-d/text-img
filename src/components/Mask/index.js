@@ -3,7 +3,7 @@ import Content from './components/Content';
 import './index.less';
 
 function Mask(props) {
-    const { showMask, img } = props;
+    const { showMask, setShowMask, img } = props;
     const handleClose = () => {
         setShowMask(false)
     }
