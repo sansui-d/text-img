@@ -1,43 +1,24 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { fabric } from 'fabric';
+import { TwitterPicker } from 'react-color';
 import './index.less';
 
 const options = [
-    {
-        name: '放大',
-        type: 'scale-up',
-    },
-    {
-        name: '缩小',
-        type: 'scale-down',
-    },
-    {
-        name: '1:1',
-        type: 'one-to-one',
-    },
     {
         name: '还原',
         type: 'reset',
     },
     {
-        name: '左旋转',
-        type: 'rotate-left',
-    },
-    {
-        name: '右旋转',
-        type: 'rotate-right',
-    },
-    {
-        name: '水平旋转',
-        type: 'flip-horizontal',
-    },
-    {
-        name: '垂直旋转',
-        type: 'flip-vertical',
-    },
-    {
         name: '添加文字',
         type: 'add-text',
+    },
+    {
+        name: '文字颜色',
+        type: 'color',
+    },
+    {
+        name: '下载',
+        type: 'download',
     }
 ]
 function Content(props) {
@@ -47,6 +28,8 @@ function Content(props) {
     const [scaleX, setScaleX] = useState(1);
     const [scaleY, setScaleY] = useState(1);
     const [angle, setAngle] = useState(0);
+    const [showColorPicker, setShowColorPicker] = useState(false);
+    const maskRef = useState(null);
     const canvas = useRef(null);
     const handleAddText = () => {
         const itext = new fabric.Textbox('Lorum ipsum dolor sit amet', {
@@ -69,62 +52,61 @@ function Content(props) {
                     img,
                     canvas.current.renderAll.bind(canvas.current),
                     {
-                        scaleX: scaleX,
-                        scaleY: scaleY,
-                        angle: angle
+                        scaleX: img.width > 800 ? canvas.current.width / img.width : 1,
+                        scaleY: img.height > 600 ? canvas.current.height / img.height : 1
                     }
                 )
             }
         )
     }, [scaleX, scaleY, angle])
+    const handleShowColorPicker = () => {
+        setShowColorPicker(true)
+    }
+    const handleChangeColor = (color) => {
+        const activeTxt = canvas.current.getActiveObjects();
+        if (!activeTxt) return
+        activeTxt.forEach((item) => {
+            item.set('fill', color)
+        })
+
+
+        canvas.current.renderAll()
+        setShowColorPicker(false)
+    }
     const handleClick = (type) => {
         switch (type) {
-            case 'scale-up':
-                break
-            case 'scale-down':
-                setWidth(width / 1.2)
-                setHeight(height / 1.2)
-                break
-            case 'one-to-one':
-                fabric.Image.fromURL(
-                    img.src,
-                    (img) => {
-                        canvas.current.setBackgroundImage(
-                            img,
-                            canvas.current.renderAll.bind(canvas.current),
-                            {
-                                scaleX: canvas.current.width / img.width,
-                                scaleY: canvas.current.height / img.height
-                            }
-                        )
-                    }
-                )
-                break;
             case 'reset':
-                break;
-            case 'rotate-left':
-
-                break;
-            case 'rotate-right':
-
-                break;
-            case 'flip-horizontal':
-
-                break;
-            case 'flip-vertical':
-
+                canvas.current.setViewportTransform([1, 0, 0, 1, 0, 0]);
                 break;
             case 'add-text':
                 handleAddText()
+                break;
+            case 'color':
+                handleShowColorPicker()
+                break;
+            case 'download':
+                handleDownload()
                 break
             default:
                 break;
         }
     }
+    const handleKeydown = (e) => {
+        if (e.key === 'Backspace') {
+            const activeTxt = canvas.current.getActiveObjects();
+            if (!activeTxt) return
+
+            activeTxt.map((item) => {
+                canvas.current.remove(item)
+            })
+            canvas.current.discardActiveObject()
+            canvas.current.renderAll()
+        }
+    }
     useEffect(() => {
         canvas.current = canvas.current
             || new fabric.Canvas('canvas', {
-                width: 500, height: 300,
+                width: img.width > 800 ? 800 : img.width, height: img.height > 600 ? 600 : img.height,
             })
 
         fabric.Object.prototype.cornerStyle = "circle";
@@ -139,13 +121,55 @@ function Content(props) {
                     i,
                     canvas.current.renderAll.bind(canvas.current),
                     {
-                        top: (300 - img.height) / 2,
-                        left: (500 - img.width) / 2,
+                        // top: (300 - img.height) / 2,
+                        // left: (500 - img.width) / 2,
                     }
                 )
             }
         )
+        canvas.current.on('mouse:wheel', opt => {
+            const delta = opt.e.deltaY // 滚轮，向上滚一下是 -100，向下滚一下是 100
+            let zoom = canvas.current.getZoom() // 获取画布当前缩放值
+            zoom *= 0.999 ** delta
+            if (zoom > 20) zoom = 20 // 限制最大缩放级别
+            if (zoom < 0.01) zoom = 0.01 // 限制最小缩放级别
+
+            // 以鼠标所在位置为原点缩放
+            canvas.current.zoomToPoint(
+                { // 关键点
+                    x: opt.e.offsetX,
+                    y: opt.e.offsetY
+                },
+                zoom // 传入修改后的缩放级别
+            )
+        })
+        canvas.current.on('mouse:down', opt => { // 鼠标按下时触发
+            let evt = opt.e
+            if (evt.altKey === true) { // 是否按住alt
+                canvas.current.isDragging = true // isDragging 是自定义的，开启移动状态
+                canvas.current.lastPosX = evt.clientX // lastPosX 是自定义的
+                canvas.current.lastPosY = evt.clientY // lastPosY 是自定义的
+            }
+        })
+
+        canvas.current.on('mouse:move', opt => { // 鼠标移动时触发
+            if (canvas.current.isDragging) {
+                let evt = opt.e
+                let vpt = canvas.current.viewportTransform // 聚焦视图的转换
+                vpt[4] += evt.clientX - canvas.current.lastPosX
+                vpt[5] += evt.clientY - canvas.current.lastPosY
+                canvas.current.requestRenderAll() // 重新渲染
+                canvas.current.lastPosX = evt.clientX
+                canvas.current.lastPosY = evt.clientY
+            }
+        })
+
+        canvas.current.on('mouse:up', opt => { // 鼠标松开时触发
+            canvas.current.setViewportTransform(canvas.current.viewportTransform) // 设置此画布实例的视口转换  
+            canvas.current.isDragging = false // 关闭移动状态
+        })
         changeImg()
+        document.addEventListener('keydown', handleKeydown)
     }, []);
     const handleDownload = () => {
 
@@ -155,14 +179,22 @@ function Content(props) {
     }
     return (
         <div className="text-gif-mask-content">
-            <div className='text-gif-mask-img'>
+            <div className='text-gif-mask-img' ref={maskRef}>
                 <canvas id="canvas" style={{
                     border: '1px solid #ccc'
                 }}></canvas>
             </div>
             <div className='text-gif-mask-tool'>
-                {options.map((item) => (<div className='text-gif-mask-tool-item' onClick={() => handleClick(item.type)} key={item.type}>{item.name}</div>))}
-                <div className='download' onClick={handleDownload}>下载</div>
+                {options.map((item) => (
+                    <div
+                        className='text-gif-mask-tool-item'
+                        onClick={() => handleClick(item.type)}
+                        key={item.type}
+                    >{item.name}{item.type === 'color' && showColorPicker &&
+                        <div className='text-gif-mask-tool-item-color-picker'>
+                            <TwitterPicker onChangeComplete={(color) => { handleChangeColor && handleChangeColor(color.hex) }} />
+                        </div>}
+                    </div>))}
             </div>
         </div>
     );
