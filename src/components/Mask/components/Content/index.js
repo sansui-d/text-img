@@ -81,6 +81,7 @@ function Content(props) {
         }
     }
     const handleKeydown = (e) => {
+        if (e.target.tagName === 'TEXTAREA') return
         if (e.key === 'Backspace' || e.key === 'Delete') {
             const activeTxt = canvas.current.getActiveObjects();
             if (!activeTxt) return
