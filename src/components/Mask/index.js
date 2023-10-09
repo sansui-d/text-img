@@ -11,7 +11,7 @@ function Mask(props) {
         <>
             {showMask ?
                 <div className="text-gif-mask">
-                    <div className='text-gif-mask-close' onClick={handleClose}>关闭</div>
+                    <div className='text-gif-mask-close' onClick={handleClose}>close</div>
                     <Content img={img} />
                 </div> : null}
         </>

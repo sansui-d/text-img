@@ -1,41 +1,37 @@
-import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { fabric } from 'fabric';
-import { TwitterPicker } from 'react-color';
+import Button from '../../../../components/Button';
+import ColorPicker from '../../../../components/ColorPicker';
+import { dataURLtoBlob } from '../../../../utils/index'
 import './index.less';
 
 const options = [
     {
-        name: '还原',
+        name: 'Reset',
         type: 'reset',
     },
     {
-        name: '添加文字',
+        name: 'Add-Text',
         type: 'add-text',
     },
     {
-        name: '文字颜色',
+        name: 'Color',
         type: 'color',
     },
     {
-        name: '下载',
+        name: 'Download',
         type: 'download',
     }
 ]
 function Content(props) {
     const { img } = props;
-    const [width, setWidth] = useState(img.width);
-    const [height, setHeight] = useState(img.height);
-    const [scaleX, setScaleX] = useState(1);
-    const [scaleY, setScaleY] = useState(1);
-    const [angle, setAngle] = useState(0);
-    const [showColorPicker, setShowColorPicker] = useState(false);
-    const maskRef = useState(null);
+    const maskRef = useRef(null);
     const canvas = useRef(null);
     const handleAddText = () => {
-        const itext = new fabric.Textbox('Lorum ipsum dolor sit amet', {
+        const itext = new fabric.Textbox('Enter Your Text', {
             left: 0,
             top: 0,
-            width: 150,
+            width: 130,
             fontSize: 20,
             transparentCorners: false,
             borderColor: '#2d8cf0',
@@ -44,7 +40,7 @@ function Content(props) {
         });
         canvas.current.add(itext).setActiveObject(itext);
     }
-    const changeImg = useCallback(() => {
+    const changeImg = () => {
         fabric.Image.fromURL(
             img.src,
             (img) => {
@@ -58,9 +54,6 @@ function Content(props) {
                 )
             }
         )
-    }, [scaleX, scaleY, angle])
-    const handleShowColorPicker = () => {
-        setShowColorPicker(true)
     }
     const handleChangeColor = (color) => {
         const activeTxt = canvas.current.getActiveObjects();
@@ -68,10 +61,7 @@ function Content(props) {
         activeTxt.forEach((item) => {
             item.set('fill', color)
         })
-
-
         canvas.current.renderAll()
-        setShowColorPicker(false)
     }
     const handleClick = (type) => {
         switch (type) {
@@ -82,7 +72,6 @@ function Content(props) {
                 handleAddText()
                 break;
             case 'color':
-                handleShowColorPicker()
                 break;
             case 'download':
                 handleDownload()
@@ -92,7 +81,7 @@ function Content(props) {
         }
     }
     const handleKeydown = (e) => {
-        if (e.key === 'Backspace') {
+        if (e.key === 'Backspace' || e.key === 'Delete') {
             const activeTxt = canvas.current.getActiveObjects();
             if (!activeTxt) return
 
@@ -120,62 +109,61 @@ function Content(props) {
                 canvas.current.setBackgroundImage(
                     i,
                     canvas.current.renderAll.bind(canvas.current),
-                    {
-                        // top: (300 - img.height) / 2,
-                        // left: (500 - img.width) / 2,
-                    }
                 )
             }
         )
         canvas.current.on('mouse:wheel', opt => {
-            const delta = opt.e.deltaY // 滚轮，向上滚一下是 -100，向下滚一下是 100
-            let zoom = canvas.current.getZoom() // 获取画布当前缩放值
+            const delta = opt.e.deltaY
+            let zoom = canvas.current.getZoom()
             zoom *= 0.999 ** delta
-            if (zoom > 20) zoom = 20 // 限制最大缩放级别
-            if (zoom < 0.01) zoom = 0.01 // 限制最小缩放级别
-
-            // 以鼠标所在位置为原点缩放
+            if (zoom > 20) zoom = 20
+            if (zoom < 0.01) zoom = 0.01
             canvas.current.zoomToPoint(
-                { // 关键点
+                {
                     x: opt.e.offsetX,
                     y: opt.e.offsetY
                 },
-                zoom // 传入修改后的缩放级别
+                zoom
             )
         })
-        canvas.current.on('mouse:down', opt => { // 鼠标按下时触发
+        canvas.current.on('mouse:down', opt => {
             let evt = opt.e
-            if (evt.altKey === true) { // 是否按住alt
-                canvas.current.isDragging = true // isDragging 是自定义的，开启移动状态
-                canvas.current.lastPosX = evt.clientX // lastPosX 是自定义的
-                canvas.current.lastPosY = evt.clientY // lastPosY 是自定义的
-            }
-        })
-
-        canvas.current.on('mouse:move', opt => { // 鼠标移动时触发
-            if (canvas.current.isDragging) {
-                let evt = opt.e
-                let vpt = canvas.current.viewportTransform // 聚焦视图的转换
-                vpt[4] += evt.clientX - canvas.current.lastPosX
-                vpt[5] += evt.clientY - canvas.current.lastPosY
-                canvas.current.requestRenderAll() // 重新渲染
+            if (evt.altKey === true) {
+                canvas.current.isDragging = true
                 canvas.current.lastPosX = evt.clientX
                 canvas.current.lastPosY = evt.clientY
             }
         })
 
-        canvas.current.on('mouse:up', opt => { // 鼠标松开时触发
-            canvas.current.setViewportTransform(canvas.current.viewportTransform) // 设置此画布实例的视口转换  
-            canvas.current.isDragging = false // 关闭移动状态
+        canvas.current.on('mouse:move', opt => {
+            if (canvas.current.isDragging) {
+                let evt = opt.e
+                let vpt = canvas.current.viewportTransform
+                vpt[4] += evt.clientX - canvas.current.lastPosX
+                vpt[5] += evt.clientY - canvas.current.lastPosY
+                canvas.current.requestRenderAll()
+                canvas.current.lastPosX = evt.clientX
+                canvas.current.lastPosY = evt.clientY
+            }
+        })
+
+        canvas.current.on('mouse:up', opt => {
+            canvas.current.setViewportTransform(canvas.current.viewportTransform)
+            canvas.current.isDragging = false
         })
         changeImg()
         document.addEventListener('keydown', handleKeydown)
     }, []);
     const handleDownload = () => {
-
-    }
-    const downloadURI = (uri, name) => {
-
+        const url = canvas.current.toDataURL()
+        var blob = dataURLtoBlob(url)
+        let elink = document.createElement('a')
+        elink.download = 'text.png'
+        elink.style.display = 'none'
+        elink.href = URL.createObjectURL(blob)
+        document.body.appendChild(elink)
+        elink.click()
+        document.body.removeChild(elink)
     }
     return (
         <div className="text-gif-mask-content">
@@ -190,10 +178,8 @@ function Content(props) {
                         className='text-gif-mask-tool-item'
                         onClick={() => handleClick(item.type)}
                         key={item.type}
-                    >{item.name}{item.type === 'color' && showColorPicker &&
-                        <div className='text-gif-mask-tool-item-color-picker'>
-                            <TwitterPicker onChangeComplete={(color) => { handleChangeColor && handleChangeColor(color.hex) }} />
-                        </div>}
+                    >{item.type === 'color' ?
+                        <ColorPicker text={item.name} onChange={handleChangeColor} /> : <Button text={item.name} />}
                     </div>))}
             </div>
         </div>

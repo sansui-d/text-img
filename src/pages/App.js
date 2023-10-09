@@ -22,10 +22,10 @@ function App() {
   }
   return (
     <div className="text-img">
-      <label htmlFor={123} className='qr-upload-label'>上传图片</label>
+      <label htmlFor='text-img-upload' className='text-img-upload-label'>Upload Image</label>
       <input
         type="file"
-        id={123}
+        id='text-img-upload'
         hidden={true}
         accept=".jpg, .jpeg, .png"
         onClick={(e) => e.target.value = null}

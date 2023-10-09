@@ -1,11 +1,11 @@
 import React from 'react';
 import './index.less';
 
-function Button() {
-
+function Button(props) {
+    const { text, onClick, btnRef } = props
     return (
-        <button className="text-img-button">
-
+        <button className="text-img-button" ref={btnRef} onClick={onClick} >
+            {text}
         </button>
     );
 }
