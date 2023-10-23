@@ -1,4 +1,45 @@
 .text-img {
   width: 100vw;
   height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #212121;
+  .text-img-upload-label {
+    cursor: pointer;
+    padding: 0.8em 1.8em;
+    border: 2px solid #488aec;
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 16px;
+    transition: .3s;
+    z-index: 1;
+    font-family: inherit;
+    color: #488aec;
+   }
+   
+   .text-img-upload-label::before {
+    content: '';
+    width: 0;
+    height: 300%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: #488aec;
+    transition: .5s ease;
+    display: block;
+    z-index: -1;
+   }
+   
+   .text-img-upload-label:hover::before {
+    width: 105%;
+   }
+   
+   .text-img-upload-label:hover {
+    color: #111;
+   }
 }

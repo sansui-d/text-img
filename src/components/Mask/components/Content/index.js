@@ -1,26 +1,31 @@
 import React, { useRef, useEffect } from 'react';
 import { fabric } from 'fabric';
-import Button from '../../../../components/Button';
-import ColorPicker from '../../../../components/ColorPicker';
-import { dataURLtoBlob } from '../../../../utils/index'
+import { dataURLtoBlob } from '@utils/file'
+import Button from '@components/Button';
+import ColorPicker from '@components/ColorPicker';
+import { resetIcon, textIcon, saveIcon, colorIcon } from '@components/Svg'
 import './index.less';
 
 const options = [
     {
         name: 'Reset',
         type: 'reset',
+        icon: resetIcon
     },
     {
         name: 'Add-Text',
         type: 'add-text',
+        icon: textIcon
     },
     {
         name: 'Color',
         type: 'color',
+        icon: colorIcon
     },
     {
         name: 'Download',
         type: 'download',
+        icon: saveIcon
     }
 ]
 function Content(props) {
@@ -155,11 +160,11 @@ function Content(props) {
         changeImg()
         document.addEventListener('keydown', handleKeydown)
     }, []);
-    const handleDownload = () => {
+    const handleDownload = async () => {
         const url = canvas.current.toDataURL()
-        var blob = dataURLtoBlob(url)
+        const blob = dataURLtoBlob(url)
         let elink = document.createElement('a')
-        elink.download = 'text.png'
+        elink.download = 'text-img.png'
         elink.style.display = 'none'
         elink.href = URL.createObjectURL(blob)
         document.body.appendChild(elink)
@@ -167,20 +172,20 @@ function Content(props) {
         document.body.removeChild(elink)
     }
     return (
-        <div className="text-gif-mask-content">
-            <div className='text-gif-mask-img' ref={maskRef}>
+        <div className="text-img-mask-content">
+            <div className='text-img-mask-img' ref={maskRef}>
                 <canvas id="canvas" style={{
                     border: '1px solid #ccc'
                 }}></canvas>
             </div>
-            <div className='text-gif-mask-tool'>
+            <div className='text-img-mask-tool'>
                 {options.map((item) => (
                     <div
-                        className='text-gif-mask-tool-item'
+                        className='text-img-mask-tool-item'
                         onClick={() => handleClick(item.type)}
                         key={item.type}
                     >{item.type === 'color' ?
-                        <ColorPicker text={item.name} onChange={handleChangeColor} /> : <Button text={item.name} />}
+                        <ColorPicker icon={item.icon} onChange={handleChangeColor} /> : <Button icon={item.icon} />}
                     </div>))}
             </div>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import Content from './components/Content';
+import { closeIcon } from '@components/Svg'
 import './index.less';
 
 function Mask(props) {
@@ -10,12 +11,11 @@ function Mask(props) {
     return (
         <>
             {showMask ?
-                <div className="text-gif-mask">
-                    <div className='text-gif-mask-close' onClick={handleClose}>close</div>
-                    <Content img={img} />
+                <div className="text-img-mask">
+                    <div className='text-img-mask-close' onClick={handleClose}>{closeIcon}</div>
+                    <Content img={img} onClose={handleClose} />
                 </div> : null}
         </>
-
     );
 }
 

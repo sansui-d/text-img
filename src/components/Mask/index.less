@@ -1,4 +1,4 @@
-.text-gif-mask {
+.text-img-mask {
     width: 100vw;
     height: 100vh;
     position: absolute;
@@ -7,12 +7,23 @@
     display: flex;
     box-sizing: border-box;
     padding: 20px;
+    z-index: 100;
 
-    .text-gif-mask-close {
-        color: #fff;
+    .text-img-mask-close {
         position: absolute;
         right: 10px;
         top: 10px;
         cursor: pointer;
+
+        svg {
+            width: 24px;
+            height: 24px;
+
+            &:hover {
+                path {
+                    fill: #1296db;
+                }
+            }
+        }
     }
 }

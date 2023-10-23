@@ -12,8 +12,7 @@ module.exports = {
         extensions: [".js"],
         alias: {
             "@components": path.resolve(__dirname, "../src/components"),
-            "@utils": path.resolve(__dirname, "../src/utils"),
-            "@assets": path.resolve(__dirname, "../src/assets"),
+            "@utils": path.resolve(__dirname, "../src/utils")
         }
     },
     module: {
@@ -51,7 +50,7 @@ module.exports = {
                 use: {
                     loader: "babel-loader",
                     options: {
-                        presets: ["@babel/preset-env", "@babel/preset-react"],
+                        presets: ["@babel/preset-env", ["@babel/preset-react", { "runtime": "automatic" }]],
                         plugins: [
                             "@babel/plugin-transform-runtime",
                             "@babel/plugin-proposal-object-rest-spread",
