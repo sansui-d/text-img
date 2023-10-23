@@ -5,6 +5,7 @@
   align-items: center;
   justify-content: center;
   background-color: #212121;
+
   .text-img-upload-label {
     cursor: pointer;
     padding: 0.8em 1.8em;
@@ -19,9 +20,9 @@
     z-index: 1;
     font-family: inherit;
     color: #488aec;
-   }
-   
-   .text-img-upload-label::before {
+  }
+
+  .text-img-upload-label::before {
     content: '';
     width: 0;
     height: 300%;
@@ -33,13 +34,13 @@
     transition: .5s ease;
     display: block;
     z-index: -1;
-   }
-   
-   .text-img-upload-label:hover::before {
+  }
+
+  .text-img-upload-label:hover::before {
     width: 105%;
-   }
-   
-   .text-img-upload-label:hover {
+  }
+
+  .text-img-upload-label:hover {
     color: #111;
-   }
+  }
 }
